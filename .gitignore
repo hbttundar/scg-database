@@ -27,6 +27,17 @@ go.work.sum
 # env file
 .env
 
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Example package temporary files
+example/scg_example.db
+
+# Backup files from sed operations
+*.bak
+
 # Editor/IDE
 # .idea/
 # .vscode/

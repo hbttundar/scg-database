@@ -1,0 +1,750 @@
+# golangci-lint configuration for scg-database
+# This configuration is optimized for a database toolkit library with CLI tools
+# It includes comprehensive linting rules while excluding false positives
+# specific to database drivers, CLI patterns, and test code.
+
+# Options for analysis running
+run:
+  # Timeout for analysis, e.g. 30s, 5m, default is 1m
+  timeout: 10m
+  # Include test files or not, default is true
+  tests: true
+  # Default concurrency is a available CPU number
+  concurrency: 4
+  # Exit code when at least one issue was found, default is 1
+  issues-exit-code: 1
+  # List of build tags, all linters use it
+  build-tags:
+    - integration
+
+# Output configuration options
+output:
+  # Formats: colored-line-number|line-number|json|tab|checkstyle|code-climate, default is "colored-line-number"
+  formats:
+    - format: colored-line-number
+  # Print lines of code with issue, default is true
+  print-issued-lines: true
+  # Print linter name in the end of issue strings, default is true
+  print-linter-name: true
+
+# All available settings of specific linters
+linters-settings:
+  depguard:
+    rules:
+      # Library code - core packages that form the public API
+      library:
+        files:
+          - "!**/*_test.go"
+          - "!**/cmd/**"
+          - "!**/example/**"
+          - "!**/testing/**"
+        allow:
+          - $gostd
+          # Standard library packages needed for database operations
+          - database/sql
+          # Internal packages - explicit listing for reliability
+          - github.com/hbttundar/scg-database
+          - github.com/hbttundar/scg-database/adapter/gorm
+          - github.com/hbttundar/scg-database/config
+          - github.com/hbttundar/scg-database/contract
+          - github.com/hbttundar/scg-database/db
+          - github.com/hbttundar/scg-database/migration
+          - github.com/hbttundar/scg-database/seeder
+          - github.com/hbttundar/scg-database/utils
+          # Core external dependencies for library functionality
+          - gorm.io/gorm
+          - gorm.io/gorm/logger
+          - gorm.io/driver/mysql
+          - gorm.io/driver/postgres
+          - gorm.io/driver/sqlite
+          # Migration dependencies
+          - github.com/golang-migrate/migrate/v4
+          - github.com/golang-migrate/migrate/v4/database
+          - github.com/golang-migrate/migrate/v4/database/mysql
+          - github.com/golang-migrate/migrate/v4/database/postgres
+          - github.com/golang-migrate/migrate/v4/database/sqlite3
+          - github.com/golang-migrate/migrate/v4/source/file
+        deny:
+          # Prevent CLI dependencies in library code
+          - pkg: github.com/spf13/cobra
+            desc: "CLI dependencies should not be used in library code"
+          - pkg: github.com/spf13/viper
+            desc: "CLI dependencies should not be used in library code"
+
+      # CLI tools - command-line interface packages
+      cli:
+        files:
+          - "**/cmd/**"
+          - "!**/cmd/**/*_test.go"
+        allow:
+          - $gostd
+          # Internal packages
+          - github.com/hbttundar/scg-database
+          - github.com/hbttundar/scg-database/adapter/gorm
+          - github.com/hbttundar/scg-database/config
+          - github.com/hbttundar/scg-database/contract
+          - github.com/hbttundar/scg-database/db
+          - github.com/hbttundar/scg-database/migration
+          - github.com/hbttundar/scg-database/seeder
+          - github.com/hbttundar/scg-database/testing
+          - github.com/hbttundar/scg-database/utils
+          # CLI-specific dependencies
+          - github.com/spf13/cobra
+          - github.com/spf13/viper
+          # Text processing for CLI
+          - golang.org/x/text/cases
+          - golang.org/x/text/language
+          # Database drivers for CLI migration commands
+          - gorm.io/gorm
+          - gorm.io/driver/mysql
+          - gorm.io/driver/postgres
+          - gorm.io/driver/sqlite
+          # Migration dependencies
+          - github.com/golang-migrate/migrate/v4
+          - github.com/golang-migrate/migrate/v4/database
+          - github.com/golang-migrate/migrate/v4/database/mysql
+          - github.com/golang-migrate/migrate/v4/database/postgres
+          - github.com/golang-migrate/migrate/v4/database/sqlite3
+          - github.com/golang-migrate/migrate/v4/source/file
+
+      # Testing utilities package - separate from test files
+      testing-utils:
+        files:
+          - "**/testing/**"
+          - "!**/testing/**/*_test.go"
+        allow:
+          - $gostd
+          # Internal packages
+          - github.com/hbttundar/scg-database
+          - github.com/hbttundar/scg-database/adapter/gorm
+          - github.com/hbttundar/scg-database/config
+          - github.com/hbttundar/scg-database/contract
+          - github.com/hbttundar/scg-database/db
+          - github.com/hbttundar/scg-database/migration
+          - github.com/hbttundar/scg-database/seeder
+          - github.com/hbttundar/scg-database/utils
+          # Testing frameworks for test utilities
+          - github.com/stretchr/testify/assert
+          - github.com/stretchr/testify/require
+          - github.com/stretchr/testify/suite
+          - github.com/stretchr/testify/mock
+          # Database drivers for testing utilities
+          - gorm.io/gorm
+          - gorm.io/driver/mysql
+          - gorm.io/driver/postgres
+          - gorm.io/driver/sqlite
+          # Migration for testing utilities
+          - github.com/golang-migrate/migrate/v4
+          - github.com/golang-migrate/migrate/v4/database
+          - github.com/golang-migrate/migrate/v4/database/mysql
+          - github.com/golang-migrate/migrate/v4/database/postgres
+          - github.com/golang-migrate/migrate/v4/database/sqlite3
+          - github.com/golang-migrate/migrate/v4/source/file
+
+      # Test files - comprehensive testing dependencies
+      tests:
+        files:
+          - "**/*_test.go"
+        allow:
+          - $gostd
+          # Internal packages
+          - github.com/hbttundar/scg-database
+          - github.com/hbttundar/scg-database/adapter/gorm
+          - github.com/hbttundar/scg-database/config
+          - github.com/hbttundar/scg-database/contract
+          - github.com/hbttundar/scg-database/db
+          - github.com/hbttundar/scg-database/example/domain/user
+          - github.com/hbttundar/scg-database/migration
+          - github.com/hbttundar/scg-database/seeder
+          - github.com/hbttundar/scg-database/testing
+          - github.com/hbttundar/scg-database/utils
+          # Testing frameworks
+          - github.com/stretchr/testify/assert
+          - github.com/stretchr/testify/require
+          - github.com/stretchr/testify/suite
+          - github.com/stretchr/testify/mock
+          # Database mocking
+          - github.com/DATA-DOG/go-sqlmock
+          # All database drivers for comprehensive testing
+          - gorm.io/gorm
+          - gorm.io/gorm/logger
+          - gorm.io/driver/mysql
+          - gorm.io/driver/postgres
+          - gorm.io/driver/sqlite
+          # Migration testing
+          - github.com/golang-migrate/migrate/v4
+          - github.com/golang-migrate/migrate/v4/database
+          - github.com/golang-migrate/migrate/v4/database/mysql
+          - github.com/golang-migrate/migrate/v4/database/postgres
+          - github.com/golang-migrate/migrate/v4/database/sqlite3
+          - github.com/golang-migrate/migrate/v4/source/file
+          # CLI testing
+          - github.com/spf13/cobra
+          - github.com/spf13/viper
+          # Text processing
+          - golang.org/x/text/cases
+          - golang.org/x/text/language
+
+      # Example code - demonstration and documentation
+      examples:
+        files:
+          - "**/example/**"
+        allow:
+          - $gostd
+          # Internal packages
+          - github.com/hbttundar/scg-database
+          - github.com/hbttundar/scg-database/adapter/gorm
+          - github.com/hbttundar/scg-database/config
+          - github.com/hbttundar/scg-database/contract
+          - github.com/hbttundar/scg-database/db
+          - github.com/hbttundar/scg-database/example/domain/user
+          - github.com/hbttundar/scg-database/migration
+          - github.com/hbttundar/scg-database/seeder
+          - github.com/hbttundar/scg-database/testing
+          - github.com/hbttundar/scg-database/utils
+          # Database drivers for examples
+          - gorm.io/gorm
+          - gorm.io/driver/mysql
+          - gorm.io/driver/postgres
+          - gorm.io/driver/sqlite
+          # Migration for examples
+          - github.com/golang-migrate/migrate/v4
+          - github.com/golang-migrate/migrate/v4/database
+          - github.com/golang-migrate/migrate/v4/database/mysql
+          - github.com/golang-migrate/migrate/v4/database/postgres
+          - github.com/golang-migrate/migrate/v4/database/sqlite3
+          - github.com/golang-migrate/migrate/v4/source/file
+  errcheck:
+    # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
+    check-type-assertions: true
+  govet:
+    # check-shadowing is deprecated, using shadow linter instead
+  gocyclo:
+    # Minimal code complexity to report, 30 by default - increased to focus on extremely complex functions
+    min-complexity: 25
+  dupl:
+    # Tokens count to trigger issue, 150 by default - increased to avoid false positives with constant definitions
+    threshold: 200
+  goconst:
+    # Minimal length of strings constant, 3 by default
+    min-len: 3
+    # Minimal occurrences count to trigger, 3 by default
+    min-occurrences: 3
+  misspell:
+    # Correct spellings using locale preferences for US or UK.
+    locale: US
+  lll:
+    # Max line length, lines longer will be reported. Default is 120.
+    line-length: 120
+  unused:
+    # Treat code as a program (not a library) and report unused exported identifiers
+    check-exported: false
+  unparam:
+    # Inspect exported functions, default is false
+    check-exported: false
+  nakedret:
+    # Make an issue if func has more lines of code than this setting and it has naked returns
+    max-func-lines: 30
+  prealloc:
+    # Report preallocation suggestions only on simple loops that have no returns/breaks/continues/gotos in them
+    simple: true
+    range-loops: true
+    for-loops: true
+  funlen:
+    # Maximum function length in lines
+    lines: 100
+    # Maximum function length in statements
+    statements: 50
+  nestif:
+    # Minimal complexity of if statements to report
+    min-complexity: 5
+  nolintlint:
+    # Enable to ensure that nolint directives are all used
+    allow-unused: false
+    # Require an explanation for nolint directives
+    require-explanation: true
+    # Require nolint directives to be specific about which linter is being disabled
+    require-specific: true
+  testpackage:
+    # Regexp pattern to skip files
+    skip-regexp: "(export|internal)_test\\.go"
+  revive:
+    # Maximum number of open files at the same time
+    max-open-files: 2048
+    # When set to false, ignores files with "GENERATED" header, similar to golint
+    ignore-generated-header: true
+    # Sets the default severity to "warning"
+    severity: warning
+    # Enable all available rules
+    enable-all-rules: false
+    # Sets the default failure confidence, this means that linting errors
+    # with less than 0.8 confidence will be ignored
+    confidence: 0.8
+    rules:
+      # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
+      - name: empty-block
+      - name: superfluous-else
+      - name: unused-parameter
+      - name: unreachable-code
+      - name: redefines-builtin-id
+  gosec:
+    # Severity level for gosec findings
+    severity: medium
+    # Confidence level for gosec findings
+    confidence: medium
+    # Exclude generated files
+    exclude-generated: true
+    # Exclude test files
+    exclude-tests: true
+    # Specify rules to include
+    includes:
+      - G101  # Look for hard coded credentials
+      - G102  # Bind to all interfaces
+      - G104  # Audit errors not checked
+      - G106  # SSH weak algorithms
+      - G107  # URL with credentials
+      - G201  # SQL query construction
+      - G202  # SQL query construction
+      - G203  # Template with unescaped data
+      - G204  # Command execution
+      - G301  # Poor file permissions
+      - G302  # Poor file permissions
+      - G303  # Sensitive data in temp file
+      - G304  # File path provided as taint input
+      - G305  # File path traversal
+      - G306  # Write to file with insecure permissions
+      - G307  # Deferring method with error return
+      - G401  # Crypto weak algorithm
+      - G402  # TLS validator
+      - G403  # Weak random number
+      - G404  # Insecure random number
+      - G501  # Blacklisted crypto algorithm
+      - G502  # Insecure import
+      - G503  # Insecure crypto algorithm
+      - G504  # Insecure crypto algorithm
+      - G505  # Insecure crypto algorithm
+    # config for specific rules
+    config:
+      G101:
+        # Pattern for detecting hardcoded credentials
+        pattern: "(?i)((password|passwd|pwd|secret|token|apikey|api_key|access_key|auth_token)\\s*[:=]\\s*['\"]([^'\"]{8,}))"
+        ignore_entropy: false
+      G102:
+        # Pattern for detecting hardcoded credentials in JSON
+        pattern: "(?i)(['\"](?:api|token|key|secret|pass|password)['\"]:[ \\t]*['\"][^'\"]+['\"])"
+  
+  # New linter configurations
+  cyclop:
+    # Maximum cyclomatic complexity of a function
+    max-complexity: 15
+    # Skip tests from complexity analysis
+    skip-tests: true
+    
+  maintidx:
+    # Show functions with maintainability index lower than N
+    under: 20
+    
+  errorlint:
+    # Check whether fmt.Errorf uses the %w verb for formatting errors
+    errorf: true
+    # Check for plain type assertions and type switches
+    asserts: true
+    # Check for plain error comparisons
+    comparison: true
+    
+  wrapcheck:
+    # List of packages whose errors don't need to be wrapped
+    ignoreSigs:
+      - .Errorf(
+      - errors.New(
+      - errors.Unwrap(
+      - .Wrap(
+      - .Wrapf(
+    # List of packages that are allowed to not wrap errors
+    ignorePackageGlobs:
+      - encoding/*
+      - github.com/pkg/errors
+      - github.com/hbttundar/scg-database/contract
+      
+  gomodguard:
+    blocked:
+      modules:
+        - github.com/golang/protobuf:
+            recommendations:
+              - google.golang.org/protobuf
+            reason: "Use the new protobuf API"
+      local_replace_directives: false
+      
+  gocritic:
+    # Enable multiple checks by tags
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+      - experimental
+    disabled-checks:
+      - commentedOutCode
+      - whyNoLint # Handled by nolintlint
+      
+  gofumpt:
+    # Choose whether to use the extra rules
+    extra-rules: true
+    
+  grouper:
+    # Require the use of a single global 'const' declaration only
+    const-require-single-const: false
+    # Require the use of grouped global 'const' declarations
+    const-require-grouping: true
+    # Require the use of a single global 'import' declaration only
+    import-require-single-import: false
+    # Require the use of grouped global 'import' declarations
+    import-require-grouping: true
+    # Require the use of a single global 'type' declaration only
+    type-require-single-type: false
+    # Require the use of grouped global 'type' declarations
+    type-require-grouping: true
+    # Require the use of a single global 'var' declaration only
+    var-require-single-var: false
+    # Require the use of grouped global 'var' declarations
+    var-require-grouping: true
+
+linters:
+  enable:
+    # Core linters - essential for any Go project
+    - errcheck      # Check for unchecked errors
+    - gosimple      # Simplify code
+    - govet         # Vet examines Go source code
+    - ineffassign   # Detect ineffectual assignments
+    - staticcheck   # Advanced Go linter (includes many SA checks)
+    - typecheck     # Type-check Go code
+    - unused        # Check for unused constants, variables, functions and types
+    
+    # Style and formatting - maintain consistent code style
+    - gofmt         # Check whether code was gofmt-ed
+    - goimports     # Check import statements are formatted well
+    - misspell      # Find commonly misspelled English words
+    - whitespace    # Check for unnecessary whitespaces
+    - stylecheck    # Stylecheck is a replacement for golint
+    - revive        # Fast, configurable, extensible, flexible, and beautiful linter for Go
+    - gofumpt       # Stricter gofmt
+    
+    # Code quality - improve maintainability and readability
+    - gocritic      # Highly extensible Go source code linter
+    - gocyclo       # Check cyclomatic complexity
+    - funlen        # Check function length
+    - nestif        # Check deeply nested if statements
+    - nakedret      # Find naked returns in functions greater than a specified function length
+    - unconvert     # Remove unnecessary type conversions
+    - unparam       # Report unused function parameters
+    - cyclop        # Check cyclomatic complexity (alternative to gocyclo)
+    - maintidx      # Measure maintainability index
+    
+    # Security - identify potential security issues
+    - gosec         # Inspect source code for security problems
+    
+    # Performance and efficiency - optimize resource usage
+    - bodyclose     # Check whether HTTP response body is closed successfully
+    - prealloc      # Find slice declarations that could potentially be preallocated
+    - noctx         # Find sending http request without context.Context
+    
+    # Imports and dependencies - manage dependencies properly
+    - depguard      # Check if package imports are in a list of acceptable packages
+    - gochecknoinits # Check that no init functions are present in Go code
+    - grouper       # Analyze expression groups
+    
+    # Constants and duplicates - reduce code duplication
+    - goconst       # Find repeated strings that could be replaced by a constant
+    - dupl          # Code clone detection
+    
+    # Line length and formatting - maintain readable code
+    - lll           # Report long lines
+    
+    # Modern Go features - leverage latest Go capabilities
+    - copyloopvar   # Check loop variable capturing (Go 1.22+)
+    - nolintlint    # Report ill-formed or insufficient nolint directives
+    - testpackage   # Check that tests are in a separate package
+    - intrange      # Find places where for loops can be replaced with range over integers (Go 1.22+)
+    
+    # Error handling - improve error management
+    - errorlint     # Find code that will cause problems with the error wrapping scheme
+    - wrapcheck     # Check that errors returned from external packages are wrapped
+    
+    # Concurrency - identify concurrency issues
+    - rowserrcheck  # Check whether Err of rows is checked successfully
+    
+    # Miscellaneous - additional useful checks
+    - dogsled       # Check assignments with too many blank identifiers
+    - forcetypeassert # Find forced type assertions
+    - gomoddirectives # Manage go.mod directives
+    - gomodguard    # Allow and block lists linter for direct Go module dependencies
+    - loggercheck   # Check key-value pairs for common logger libraries
+    - nilnil        # Check that there is no simultaneous return of nil error and nil value
+    - nosprintfhostport # Check for misuse of Sprintf to construct a host with port
+    - predeclared   # Find code that shadows one of Go's predeclared identifiers
+    - promlinter    # Check Prometheus metrics naming via promlint
+    - reassign      # Check that package variables are not reassigned
+    - testableexamples # Check if examples are testable
+    - tparallel     # Detect inappropriate usage of t.Parallel()
+    - usestdlibvars # Detect the possibility to use variables/constants from stdlib
+    - usetesting    # Detect using os.Setenv instead of t.Setenv (replaces tenv)
+    - wastedassign  # Find wasted assignment statements
+    
+  disable:
+    # Disabled linters (with reasons)
+    # - prealloc is enabled above, removing from disable list
+    
+  # Run only fast linters from enabled linters set (first run won't be fast)
+  fast: false
+
+issues:
+  # Maximum issues count per one linter. Set to 0 to disable. Default is 50.
+  max-issues-per-linter: 0
+  # Maximum count of issues with the same strings. Set to 0 to disable. Default is 3.
+  max-same-issues: 0
+  
+  # Exclude directories from analysis
+  exclude-dirs:
+    - vendor
+    - .git
+    - node_modules
+    
+  # Exclude files from analysis
+  exclude-files:
+    - ".*\\.pb\\.go$"
+    - ".*_gen\\.go$"
+    - ".*\\.generated\\.go$"
+  
+  # List of regexps of issue texts to exclude, empty list by default.
+  exclude:
+    # Exclude common false positives
+    - "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*print(f|ln)?|os\\.(Un)?Setenv). is not checked"
+    - "func name will be used as test\\.Test.* by other packages, and that stutters; consider calling this"
+    - "G104: Errors unhandled" # Handled by errcheck linter instead
+    
+  # Excluding configuration per-path, per-linter, per-strings and per-source
+  exclude-rules:
+    # Exclude some linters from running on test files
+    - path: _test\.go
+      linters:
+        - gocyclo        # Tests can be complex
+        - errcheck       # Tests often ignore errors intentionally
+        - dupl           # Test code duplication is acceptable
+        - gosec          # Security checks less critical in tests
+        - funlen         # Test functions can be long
+        - gochecknoinits # Test init functions are acceptable
+        - unparam        # Test helper functions may have unused params
+        - goconst        # Test constants repetition is acceptable
+        
+    # Exclude linters for CLI command files (main.go, commands)
+    - path: cmd/.*\.go
+      linters:
+        - gochecknoinits # CLI tools often use init functions
+        - funlen         # CLI command functions can be long
+        - gocyclo        # CLI commands can be complex
+        
+    # Exclude blank import warnings for database drivers (legitimate side-effect imports)
+    - path: (migration/migrator\.go|cmd/scg-db/migrate\.go)
+      text: "blank-imports:"
+      linters:
+        - revive
+        
+    # Exclude blank import warnings for database drivers
+    - source: "_ \"github\\.com/golang-migrate/migrate/v4/database/"
+      linters:
+        - revive
+        - stylecheck
+        
+    # Exclude blank import warnings for source drivers  
+    - source: "_ \"github\\.com/golang-migrate/migrate/v4/source/"
+      linters:
+        - revive
+        - stylecheck
+        
+    # Allow long lines in generated files or specific patterns
+    - path: \\.pb\\.go
+      linters:
+        - lll
+        
+    # Exclude specific patterns for database connection strings
+    - text: "G101: Potential hardcoded credentials"
+      path: (config/.*|.*_test\.go)
+      linters:
+        - gosec
+        
+    # Allow naked returns in short functions (adapters, simple getters)
+    - path: (adapter/.*|contract/.*)
+      text: "naked return"
+      linters:
+        - nakedret
+        
+    # Allow unused parameters in interface implementations
+    - path: adapter/.*\.go
+      text: "unused-parameter"
+      linters:
+        - revive
+        
+    # Allow package comments to be missing in internal packages
+    - path: (internal/.*|testing/.*)
+      text: "package-comments"
+      linters:
+        - revive
+        
+    # Allow init functions in adapter registration
+    - path: adapter/.*/.*\.go
+      text: "don't use init function"
+      linters:
+        - gochecknoinits
+        
+    # Exclude testpackage linter for files that need to test unexported functions
+    - path: (.*_internal_test\.go|.*_whitebox_test\.go)
+      linters:
+        - testpackage
+        
+    # Allow same-package tests for adapter implementations (need to test unexported methods)
+    - path: adapter/.*_test\.go
+      linters:
+        - testpackage
+        
+    # Allow same-package tests for core packages that test unexported functionality
+    - path: (contract/.*_test\.go|db/.*_test\.go|config/.*_test\.go|migration/.*_test\.go|seeder/.*_test\.go|testing/.*_test\.go|utils/.*_test\.go)
+      linters:
+        - testpackage
+        
+    # Allow duplicate imports for database drivers (mysql/postgres have both blank and named imports)
+    - text: "ST1019.*is being imported more than once"
+      linters:
+        - stylecheck
+        
+    # Allow stuttering names for factory types (GormQueryBuilderFactory is clear)
+    - text: "type name will be used as.*Factory.*stutters"
+      linters:
+        - revive
+        
+    # Allow unused parameters in mock implementations and test helpers
+    - path: .*_test\.go
+      text: "unused-parameter"
+      linters:
+        - revive
+        
+    # Allow unused functions in test files (test helpers may not be used in all tests)
+    - path: .*_test\.go
+      linters:
+        - unused
+        
+    # Allow complex nested blocks in comprehensive test cases
+    - path: .*_test\.go
+      text: "has complex nested blocks"
+      linters:
+        - nestif
+        
+    # Allow long lines in test files for descriptive test names and assertions
+    - path: .*_test\.go
+      linters:
+        - lll
+        - cyclop        # Test functions can be complex
+        - maintidx      # Test maintainability is less critical
+        - wrapcheck     # Tests don't need to wrap all errors
+        - errorlint     # Tests can use simple error handling
+        - gofumpt       # Tests can have relaxed formatting
+        
+    # Allow exitAfterDefer in example code (it's intentional for demonstration)
+    - path: example/.*\.go
+      text: "exitAfterDefer"
+      linters:
+        - gocritic
+        
+    # Allow complex functions in CLI commands
+    - path: cmd/.*\.go
+      linters:
+        - cyclop        # CLI commands can be complex
+        - maintidx      # CLI maintainability is less critical
+        - wrapcheck     # CLI can use simple error handling
+        
+    # Allow interface implementations to have different error handling
+    - path: adapter/.*\.go
+      linters:
+        - wrapcheck     # Adapters implement interfaces, different error handling
+        - errorlint     # Adapter error handling can be simpler
+        
+    # Allow contract packages to define simple interfaces
+    - path: contract/.*\.go
+      linters:
+        - wrapcheck     # Contracts define interfaces, not implementations
+        - cyclop        # Interface methods can be simple
+        - maintidx      # Interface maintainability is different
+        
+    # Allow migration files to have complex logic
+    - path: migration/.*\.go
+      linters:
+        - cyclop        # Migration logic can be complex
+        - maintidx      # Migration maintainability is less critical
+        - wrapcheck     # Migration errors are handled differently
+        
+    # Allow utility functions to be more flexible
+    - path: utils/.*\.go
+      linters:
+        - wrapcheck     # Utility functions may not wrap all errors
+        - cyclop        # Utility functions can be complex
+        
+    # Allow database seeding to have relaxed rules
+    - path: seeder/.*\.go
+      linters:
+        - cyclop        # Seeding logic can be complex
+        - wrapcheck     # Seeding errors are handled differently
+        
+    # Allow testing utilities to have relaxed rules
+    - path: testing/.*\.go
+      linters:
+        - cyclop        # Testing utilities can be complex
+        - maintidx      # Testing utility maintainability is different
+        - wrapcheck     # Testing utilities handle errors differently
+        
+    # Allow forced type assertions in test files and adapters
+    - path: (.*_test\.go|adapter/.*)
+      linters:
+        - forcetypeassert
+        
+    # Allow reassignment in configuration and setup code
+    - path: (config/.*\.go|cmd/.*/main\.go)
+      linters:
+        - reassign
+        
+    # Allow nil returns in interface implementations
+    - path: (adapter/.*\.go|contract/.*\.go)
+      linters:
+        - nilnil
+        
+    # Allow standard library variable shadowing in specific contexts
+    - path: (.*_test\.go|example/.*)
+      linters:
+        - predeclared
+        
+    # Allow heavy config structs to be passed by value (common pattern)
+    - text: "hugeParam.*config\\.Config.*consider passing it by pointer"
+      linters:
+        - gocritic
+        
+    # Allow nil returns in test mock implementations
+    - path: .*_test\.go
+      text: "return both a `nil` error and an invalid value"
+      linters:
+        - nilnil
